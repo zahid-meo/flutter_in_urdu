@@ -1,0 +1,199 @@
+---
+title: "Firebase Firestore CRUD Operations Flutter Mein: Step by Step Guide"
+description: "Cloud Firestore NoSQL database mein data create, read, update aur delete karne ka mukammal tareeqa Flutter mein. Real-time StreamBuilder aur offline caching ka code Roman Urdu mein."
+category: "firebase"
+author: "Muhammad Zahid"
+publishedAt: "2026-10-24"
+updatedAt: "2026-10-24"
+readingTime: "9 min read"
+tags: ["firebase", "firestore", "flutter", "crud", "nosql-database"]
+featured: false
+---
+
+Jab aap mobile app banate hain to user ka data (jaise profile details, notes, orders ya chat messages) cloud par store karna zaroori hota hai. Google ka **Cloud Firestore** ek flexible, scalable NoSQL cloud database hai jo real-time data sync aur offline support provide karta hai.
+
+Is tutorial mein hum Flutter ke zariye Cloud Firestore mein **CRUD (Create, Read, Update, Delete)** operations perform karna seekhenge.
+
+---
+
+## 1. Cloud Firestore Database Setup
+
+1. [Firebase Console](https://console.firebase.google.com/) mein apne project ko open karein.
+2. Left menu se **Firestore Database** par click karein.
+3. **Create Database** par click karein, server location choose karein, aur shuruati tor par **Start in test mode** select karein (baad mein hum rules secure karenge).
+4. Terminal mein Firestore package install karein:
+
+```bash
+flutter pub add cloud_firestore
+```
+
+---
+
+## 2. 1. Create Operation (Naya Data Add Karna)
+
+Firestore mein data **Collections** (folders jaisa) aur **Documents** (files jaisa) mein store hota hai.
+
+Do tareeqe hain:
+* **Auto-generated ID:** Jab aap Firestore ko khud unique ID banane dete hain (`.add()`).
+* **Custom ID:** Jab aap khud Document ID set karte hain (`.set()`).
+
+```dart
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class FirestoreService {
+  final CollectionReference _usersCollection =
+      FirebaseFirestore.instance.collection('users');
+
+  // Naya User Add Karna (.add auto-generates document ID)
+  Future<void> addUser({
+    required String name,
+    required String role,
+    required int experience,
+  }) async {
+    try {
+      await _usersCollection.add({
+        'name': name,
+        'role': role,
+        'experience': experience,
+        'createdAt': FieldValue.serverTimestamp(), // Server ka exact time
+      });
+      print('User kamyabi se add ho gaya!');
+    } catch (e) {
+      print('Data add karne mein error: $e');
+      rethrow;
+    }
+  }
+}
+```
+
+---
+
+## 3. 2. Read Operation (Real-time StreamBuilder Ke Zariye)
+
+Firestore ka sab se zabardast feature **Real-time Updates** hai. Jaise hi database mein koi data change hota hai, aapki Flutter screen bina refresh kiye khud-b-khud update ho jati hai:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class UsersListScreen extends StatelessWidget {
+  const UsersListScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Firestore Users (Real-time)')),
+      body: StreamBuilder<QuerySnapshot>(
+        // snapshots() real-time stream listen karta hai
+        stream: FirebaseFirestore.instance.collection('users').orderBy('createdAt', descending: true).snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final docs = snapshot.data!.docs;
+
+          if (docs.isEmpty) {
+            return const Center(child: Text('Koi record mojood nahi hai.'));
+          }
+
+          return ListView.builder(
+            itemCount: docs.length,
+            itemBuilder: (context, index) {
+              final user = docs[index].data() as Map<String, dynamic>;
+              final docId = docs[index].id;
+
+              return ListTile(
+                title: Text(user['name'] ?? 'No Name'),
+                subtitle: Text('${user['role']} - ${user['experience']} saal tajurba'),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: () {
+                    // Delete operation call
+                    FirebaseFirestore.instance.collection('users').doc(docId).delete();
+                  },
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+```
+
+---
+
+## 4. 3. Update Operation (Mojooda Data Ko Badilna)
+
+Agar kisi user ka role ya experience update karna ho to `.update()` method use karte hain:
+
+```dart
+Future<void> updateUserRole(String docId, String newRole) async {
+  try {
+    await FirebaseFirestore.instance.collection('users').doc(docId).update({
+      'role': newRole,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+    print('User update ho gaya!');
+  } catch (e) {
+    print('Update error: $e');
+  }
+}
+```
+
+---
+
+## 5. 4. Delete Operation (Data Khatam Karna)
+
+Ksi specific document ko delete karne ke liye document ID pass karein:
+
+```dart
+Future<void> deleteUser(String docId) async {
+  try {
+    await FirebaseFirestore.instance.collection('users').doc(docId).delete();
+    print('User delete ho gaya!');
+  } catch (e) {
+    print('Delete error: $e');
+  }
+}
+```
+
+---
+
+## 6. Firestore Security Rules (AdSense & App Security)
+
+Production mein app release karte waqt rules ko hamesha secure karein. `Test Mode` 30 din baad expire ho jata hai:
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Sirf logged-in users apna data create/update kar sakein
+    match /users/{userId} {
+      allow read: if true; // Har koi dekh sake
+      allow write: if request.auth != null; // Sirf login shuda users likh sakein
+    }
+  }
+}
+```
+
+---
+
+## 7. Meri Raaye / Mera Tajurba (Muhammad Zahid)
+
+> **Cost Optimization Tip:**
+> Firestore par charges **Documents Read aur Write** ki counting par hote hain. Agar aapki app par 10,000 active users hain aur aap bar bar poori collection bina pagination ke read karenge, to Firebase ka bill high ho sakta hai.
+> 
+> Hamesha `.limit(20)` aur query pagination ka istemaal karein taake unnecessary reads se bacha ja sake.
+
+---
+
+## 8. Khulasa
+
+Cloud Firestore Flutter ke sath realtime NoSQL data management ko intehai asaan bana deta hai. Agle tutorial mein hum **Flutter ke common errors aur unka 100% solution** discuss karenge!

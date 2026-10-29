@@ -1,0 +1,92 @@
+---
+title: "Android Studio Mein Flutter Setup: Windows 11 Par Complete Installation Guide"
+description: "Windows 10 aur 11 par Android Studio, Flutter SDK, Command Line Tools aur Android Virtual Device (AVD Emulator) install karne ka aasan tareeqa Roman Urdu mein."
+category: "flutter"
+author: "Muhammad Zahid"
+publishedAt: "2026-10-22"
+updatedAt: "2026-10-22"
+readingTime: "7 min read"
+tags: ["flutter", "android-studio", "windows-11", "installation-setup", "emulator"]
+featured: false
+---
+
+Flutter seekhne ka pehla aur ahem tareen marhala apne computer par **Android Studio** aur **Flutter SDK** ko sahi tarah se configure karna hai. Agar setup mein koi mistake ho jaye to `flutter doctor` bar bar errors dikhata hai.
+
+Is tutorial mein hum Windows 10/11 par step-by-step setup mukammal karenge taake aapka environment 100% ready ho jaye.
+
+---
+
+## 1. Step 1: Android Studio Download Aur Install Karna
+
+1. [developer.android.com/studio](https://developer.android.com/studio) par jayein aur official Android Studio setup download karein.
+2. Installer run karein aur **Android Virtual Device (AVD)** ke checkbox ko zaroor check rakhein.
+3. Installation mukammal hone ke baad Android Studio open karein.
+
+---
+
+## 2. Step 2: Command-line Tools Install Karna (Most Important)
+
+Yeh wo step hai jahan 90% Pakistani beginners mistake karte hain aur `flutter doctor` unhein error deta hai:
+
+1. Android Studio ke Welcome screen par **More Actions** par click karein aur **SDK Manager** kholein.
+2. Upar tabs mein se **SDK Tools** tab par click karein.
+3. List mein se darj zail options ko check (tick) karein:
+   * **Android SDK Command-line Tools (latest)**
+   * **Android SDK Build-Tools**
+   * **Android Emulator**
+4. **Apply** aur **OK** dabayein taake yeh tools download ho sakein.
+
+---
+
+## 3. Step 3: Flutter & Dart Plugins Install Karna
+
+1. Android Studio ki welcome screen par **Plugins** menu par click karein.
+2. Search bar mein type karein: `Flutter`.
+3. **Install** par click karein (yeh Dart plugin ko khud hi sath install kar dega).
+4. IDE ko restart karein. Ab aapko welcome screen par **"New Flutter Project"** ka button nazar aayega.
+
+---
+
+## 4. Step 4: Android Virtual Device (Emulator) Setup
+
+Agar aapke paas testing ke liye physical Android phone nahi hai, to computer ke andar virtual phone (Emulator) banayein:
+
+1. Android Studio mein **Virtual Device Manager** kholein.
+2. **Create Device** par click karein.
+3. Koi bhi modern phone select karein (e.g. `Pixel 7`).
+4. System Image mein latest Android version (e.g., API 34 ya 35) download karke select karein.
+5. Finish dabayein aur Play button par click karke Emulator start karein.
+
+---
+
+## 5. Step 5: Android Licenses Accept Karna
+
+Apna Command Prompt ya PowerShell open karein aur yeh command run karein:
+
+```bash
+flutter doctor --android-licenses
+```
+
+Screen par 5 se 6 dafa terms and conditions aayengi. Har ek par keyboard se `y` press karke `Enter` dabayein.
+
+Aakhir mein run karein:
+```bash
+flutter doctor
+```
+
+Agar tamam options par Green Checkmark (`[✓]`) aa jaye, to mubarak ho! Aapka Windows system mobile application development ke liye tayyar hai.
+
+---
+
+## 6. Meri Raaye / Mera Tajurba (Muhammad Zahid)
+
+> **Low RAM Laptop Users Ke Liye Pro Tip:**
+> Agar aapke laptop mein sirf **8GB RAM** hai, to Android Emulator mat chalayein kyunke Emulator 3GB se 4GB RAM akela consume kar leta hai aur laptop hang hone lagta hai.
+> 
+> Iska behtareen hal yeh hai ke apna **asli Android phone USB cable se laptop ke sath connect karein**, phone ki Settings mein jakar **Developer Options -> USB Debugging** on karein. App direct aapke real phone par fast chalegi aur laptop bilkul smooth rahega!
+
+---
+
+## 7. Khulasa
+
+Android Studio aur Flutter ka setup ek martaba sahi ho jaye to phir aap mahino tak bina kisi pareshani ke coding kar sakte hain. Agle tutorial mein hum **Kotlin aur Jetpack Compose ka basic introduction** seekhenge!

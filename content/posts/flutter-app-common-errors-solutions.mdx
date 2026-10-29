@@ -1,0 +1,147 @@
+---
+title: "Flutter App Mein Common Errors Aur Unka 100% Hal (Debugging Guide)"
+description: "RenderFlex overflowed, LateInitializationError, aur Gradle build failure jaise 6 ahem Flutter errors ko theek karne ka practical tareeqa Roman Urdu mein."
+category: "flutter"
+author: "Muhammad Zahid"
+publishedAt: "2026-10-23"
+updatedAt: "2026-10-23"
+readingTime: "8 min read"
+tags: ["flutter", "debugging", "errors", "renderflex", "gradle-errors"]
+featured: false
+---
+
+Flutter development ke dauraan console screen par red error screen (Red Screen of Death) dekh kar aksar beginners ghabra jate hain aur project chhorne ka sochte hain.
+
+Lekin haqeeqat yeh hai ke **debugging hi aapko ek senior developer banati hai**. Is tutorial mein hum Flutter ke 6 sab se common errors aur unka aasan hal step-by-step samjhenge.
+
+---
+
+## 1. Error 1: "A RenderFlex overflowed by X pixels on the bottom/right"
+
+### Yeh Error Kyun Aata Hai?
+Yeh Flutter ka sab se mashhoor error hai (yellow aur black stripes wali screen). Yeh tab aata hai jab aapke widgets ki size mobile screen ki mojooda space se zyada ho jati hai, khaas tor par jab user mobile keyboard open karta hai.
+
+### Hal (Solution):
+Apne Column ya Row ko `SingleChildScrollView` ya `Expanded` widget mein wrap karein:
+
+```dart
+// Ghalat Code (Overflow karega):
+Column(
+  children: [
+    TextField(),
+    TextField(),
+    ElevatedButton(...),
+  ],
+)
+
+// Sahi Code:
+SingleChildScrollView(
+  padding: const EdgeInsets.all(16.0),
+  child: Column(
+    children: [
+      TextField(),
+      TextField(),
+      ElevatedButton(...),
+    ],
+  ),
+)
+```
+
+---
+
+## 2. Error 2: "LateInitializationError: Field 'user' has not been initialized"
+
+### Yeh Error Kyun Aata Hai?
+Dart Null Safety mein jab aap kisi variable ke sath `late` keyword lagate hain (e.g. `late User user;`), aur variable ko value assign karne se pehle hi use call kar lete hain.
+
+### Hal (Solution):
+Variable ko nullable banayein (`User? user;`) ya check karein ke data assign hua hai ya nahi:
+
+```dart
+// Behtar Tareeqa:
+User? user;
+
+// Use karte waqt null check karein:
+if (user != null) {
+  print(user!.name);
+} else {
+  print('Loading user data...');
+}
+```
+
+---
+
+## 3. Error 3: "setState() called after dispose()"
+
+### Yeh Error Kyun Aata Hai?
+Aap ne koi asynchronous API call ya timer chalaya hua tha. Lekin response aane se pehle hi user ne screen ko **Back** kar diya (screen dispose ho gayi). Jab background function ne wapis aakar `setState()` call kiya to Flutter ne crash kar diya.
+
+### Hal (Solution):
+Hamesha `setState()` call karne se pehle `mounted` property check karein:
+
+```dart
+Future<void> fetchData() async {
+  final data = await apiService.getData();
+  
+  // Mounted check lagana zaroori hai
+  if (!mounted) return;
+  
+  setState(() {
+    _data = data;
+  });
+}
+```
+
+---
+
+## 4. Error 4: "Android Gradle build failed: Could not resolve dependencies"
+
+### Yeh Error Kyun Aata Hai?
+Pakistan mein slow internet ya cache corruption ki wajah se Gradle dependencies sahi se download nahi ho patin.
+
+### Hal (Solution):
+Terminal mein yeh steps follow karein:
+1. `flutter clean` command chalayein (purana cache saaf ho jayega).
+2. `flutter pub get` chalayein.
+3. `cd android` karein aur `./gradlew clean` chalayein (Windows par `gradlew clean`).
+4. `cd ..` karke dobara `flutter run` karein.
+
+---
+
+## 5. Error 5: "Vertical viewport was given unbounded height"
+
+### Yeh Error Kyun Aata Hai?
+Jab aap `Column` ke andar direct `ListView` ya `GridView` daal dete hain bina uski height fix kiye. Dono infinite height mangte hain jis se Flutter confuse ho jata hai.
+
+### Hal (Solution):
+`ListView` ko `Expanded` widget ke andar rakhein, ya `shrinkWrap: true` aur `physics: NeverScrollableScrollPhysics()` set karein:
+
+```dart
+// Option 1:
+Column(
+  children: [
+    Text('Header'),
+    Expanded(
+      child: ListView.builder(
+        itemCount: 10,
+        itemBuilder: (context, index) => ListTile(...),
+      ),
+    ),
+  ],
+)
+```
+
+---
+
+## 6. Meri Raaye / Mera Tajurba (Muhammad Zahid)
+
+> **Debugging Secret:**
+> Jab bhi koi error aaye, to terminal mein sab se upar wali 2 lines aur **file ka name + line number** dhoondein (e.g. `lib/screens/home.dart:45`). 
+> 
+> Red screen ko dekh kar panic na hon; Flutter ke error messages dunya ke sab se zyada informative error messages hote hain aur wo khud batate hain ke masla kis line par hai.
+
+---
+
+## 7. Khulasa
+
+Errors se darna nahi hai, balki inhein samajhna hai. Agle tutorial mein hum **Android Studio mein Flutter setup (Windows 11)** par baat karenge!

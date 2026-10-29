@@ -1,0 +1,135 @@
+---
+title: "Kotlin Jetpack Compose Ka Basic Introduction: Modern Android UI Guide"
+description: "Puraane XML layouts ko chhoriye! Jetpack Compose kya hai aur Kotlin ke zariye modern declarative Android UI kaise banayein? Beginners ke liye basic guide Roman Urdu mein."
+category: "kotlin"
+author: "Muhammad Zahid"
+publishedAt: "2026-10-21"
+updatedAt: "2026-10-21"
+readingTime: "8 min read"
+tags: ["kotlin", "jetpack-compose", "android-development", "declarative-ui", "native-android"]
+featured: false
+---
+
+Pichle 15 saalon se Native Android development mein user interface (UI) design karne ke liye hum **XML layout files** banate thay aur phir Java ya Kotlin mein `findViewById()` ke zariye unhein connect karte thay. Yeh tareeqa bohat lamba aur complex hota tha.
+
+Lekin Google ne Android development ko modernize karte hue **Jetpack Compose** launch kiya hai. Agar aap Flutter ke baad Native Android (Kotlin) explore karna chahte hain, to Jetpack Compose aapko bilkul apna lagega!
+
+---
+
+## 1. Jetpack Compose Kya Hai?
+
+Jetpack Compose Google ka modern **declarative UI toolkit** hai jo Native Android apps banane ke liye use hota hai.
+
+* **Puraana Tareeqa (Imperative / XML):** XML file banao -> Kotlin file mein View dhoondo -> Data change hone par manually UI elements ko update karo.
+* **Modern Compose Tareeqa (Declarative):** Sirf Kotlin code likhein aur compose function ko batayein ke screen par kya dikhana hai. Jab data change hota hai, to Compose automatically UI ko dobara render kar deta hai (Recomposition).
+
+---
+
+## 2. `@Composable` Function Kya Hota Hai?
+
+Jetpack Compose mein har UI element ek simple Kotlin function hota hai jiske upar `@Composable` annotation lagi hoti hai:
+
+```kotlin
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+
+@Composable
+fun Greeting(name: String) {
+    Text(text = "Assalam-o-Alaikum $name, Jetpack Compose seekhein!")
+}
+```
+
+Yeh function kisi XML file par depend nahi karta; yeh direct screen par text render karta hai.
+
+---
+
+## 3. Basic Layout Elements: Column, Row Aur Box
+
+Jaise Flutter mein `Column`, `Row`, aur `Stack` hote hain, theek usi tarah Jetpack Compose mein bhi basic building blocks hotay hain:
+
+```kotlin
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+
+@Composable
+fun UserProfileCard(name: String, role: String) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.Start
+        ) {
+            Text(
+                text = name,
+                style = MaterialTheme.typography.titleLarge
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = role,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Button(onClick = { /* Button click action */ }) {
+                Text(text = "Profile Dekhein")
+            }
+        }
+    }
+}
+```
+
+---
+
+## 4. State Management: `remember` Aur `mutableStateOf`
+
+Compose mein jab aapko kisi variable ki value update karni ho (jaise counter ya form input), to hum state create karte hain:
+
+```kotlin
+import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+
+@Composable
+fun SimpleCounter() {
+    // remember state ko recomposition ke doran mehfooz rakhta hai
+    var count by remember { mutableStateOf(0) }
+
+    Button(onClick = { count++ }) {
+        Text(text = "Clicks Ki Tadad: $count")
+    }
+}
+```
+
+---
+
+## 5. Flutter Aur Jetpack Compose Ka Muwazna
+
+| Flutter | Jetpack Compose |
+|---|---|
+| Language: **Dart** | Language: **Kotlin** |
+| Cross-Platform (iOS + Android + Web) | Primarily Android Native |
+| Widget based (`StatelessWidget`) | Function based (`@Composable`) |
+| Hot Reload Available | Live Edit & Interactive Previews |
+
+---
+
+## 6. Meri Raaye / Mera Tajurba (Muhammad Zahid)
+
+> **Mera Experience:**
+> Agar aap pehle se Flutter seekh chuke hain, to Jetpack Compose seekhna aapke liye intehai aasan hoga kyunke dono ka **Mental Model (Declarative Programming)** bilkul same hai. 
+> 
+> Agar aap aisi company mein job karna chahte hain jahan sirf 100% pure Native Android projects par kaam hota hai, to Kotlin ke sath Jetpack Compose aapki profile ko bohat high value deta hai.
+
+---
+
+## 7. Khulasa
+
+Jetpack Compose Native Android development ka future hai. Agle tutorial mein hum modern **AI Tools for Developers (Cursor, Copilot, Claude Code)** ka jaiza lenge!

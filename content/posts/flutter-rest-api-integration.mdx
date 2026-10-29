@@ -1,0 +1,210 @@
+---
+title: "Flutter Mein REST API Integration: GET Aur POST Requests Ka Aasan Tareeqa"
+description: "Flutter application mein external backend APIs ko integrate karne ka step-by-step guide. http package, JSON parsing, Dart model classes aur FutureBuilder ka mukammal code Roman Urdu mein."
+category: "flutter"
+author: "Muhammad Zahid"
+publishedAt: "2026-10-26"
+updatedAt: "2026-10-26"
+readingTime: "8 min read"
+tags: ["flutter", "rest-api", "http", "json-parsing", "async-programming"]
+featured: false
+---
+
+Koi bhi real-world mobile app baghair internet aur backend server ke mukammal nahi hoti—chahe wo weather app ho, e-commerce store ho ya social media app. In sab ke peeche **REST APIs (Application Programming Interfaces)** kaam karti hain.
+
+Agar aap Flutter developer hain to backend se JSON data fetch karna aur mobile screen par render karna aapko aana zaroori hai. Is tutorial mein hum aasan Roman Urdu mein samjhenge ke REST API integration kaise ki jati hai.
+
+---
+
+## 1. REST API Kya Hoti Hai?
+
+REST (Representational State Transfer) ek architectural style hai jismein mobile app (Client) aur backend server ek doosre se **HTTP requests** ke zariye baat karte hain:
+
+* **GET:** Server se data mangwane ke liye (e.g., product list ya user profile dekhna).
+* **POST:** Server par naya data bhejne ke liye (e.g., order place karna ya naya form submit karna).
+* **PUT/PATCH:** Purane data ko update karne ke liye.
+* **DELETE:** Data ko remove karne ke liye.
+
+Server hume response mein aam taur par **JSON (JavaScript Object Notation)** format mein data wapis bhejta hai.
+
+---
+
+## 2. Dependencies Setup: `http` Package
+
+Flutter project mein network requests bhejne ke liye hum Google ka official `http` package istemaal karte hain:
+
+```bash
+flutter pub add http
+```
+
+Apne `pubspec.yaml` mein check karein ke dependency shamil ho gayi hai:
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.0
+```
+
+---
+
+## 3. JSON Se Dart Model Class Banana (Most Important Step)
+
+Aksar beginners JSON data ko direct `Map<String, dynamic>` ke zariye access karte hain (jaise `response['title']`). Yeh tareeqa bohat khatarnak hai kyunke spelling mistype hone par runtime crash aa jata hai.
+
+Hamesha **Model Class** banayein:
+
+```dart
+class PostModel {
+  final int id;
+  final String title;
+  final String body;
+
+  PostModel({
+    required this.id,
+    required this.title,
+    required this.body,
+  });
+
+  // JSON ko Dart Object mein convert karne ke liye factory constructor
+  factory PostModel.fromJson(Map<String, dynamic> json) {
+    return PostModel(
+      id: json['id'] as int,
+      title: json['title'] as String,
+      body: json['body'] as String,
+    );
+  }
+
+  // Dart Object ko JSON mein convert karne ke liye (POST request ke liye)
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'body': body,
+    };
+  }
+}
+```
+
+---
+
+## 4. GET Request: Server Se Data Mangwana
+
+Hum free testing API `https://jsonplaceholder.typicode.com/posts` se posts fetch karenge:
+
+```dart
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'post_model.dart';
+
+class ApiService {
+  static const String baseUrl = 'https://jsonplaceholder.typicode.com';
+
+  // GET Request Function
+  Future<List<PostModel>> fetchPosts() async {
+    final response = await http.get(Uri.parse('$baseUrl/posts'));
+
+    if (response.statusCode == 200) {
+      // JSON string ko decode karke List of Maps banayein
+      List<dynamic> jsonList = jsonDecode(response.body);
+      
+      // Har map ko PostModel mein convert karein
+      return jsonList.map((item) => PostModel.fromJson(item)).toList();
+    } else {
+      throw Exception('Server error: Status code ${response.statusCode}');
+    }
+  }
+}
+```
+
+---
+
+## 5. FutureBuilder Ke Zariye UI Mein Data Dikhana
+
+Flutter ka `FutureBuilder` widget API calls ke liye behtareen hai kyunke yeh loading state, error state aur data state ko automatically handle karta hai:
+
+```dart
+import 'package:flutter/material.dart';
+import 'api_service.dart';
+import 'post_model.dart';
+
+class PostsListScreen extends StatefulWidget {
+  const PostsListScreen({super.key});
+
+  @override
+  State<PostsListScreen> createState() => _PostsListScreenState();
+}
+
+class _PostsListScreenState extends State<PostsListScreen> {
+  late Future<List<PostModel>> _postsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    // initState mein API call initialize karein taake rebuild par bar bar call na ho
+    _postsFuture = ApiService().fetchPosts();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('REST API Posts - Urdu Tutorial')),
+      body: FutureBuilder<List<PostModel>>(
+        future: _postsFuture,
+        builder: (context, snapshot) {
+          // 1. Loading State
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          // 2. Error State
+          else if (snapshot.hasError) {
+            return Center(
+              child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.red)),
+            );
+          }
+          // 3. Data Available
+          else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+            final posts = snapshot.data!;
+            return ListView.separated(
+              itemCount: posts.length,
+              separatorBuilder: (_, __) => const Divider(),
+              itemBuilder: (context, index) {
+                return ListTile(
+                  leading: CircleAvatar(child: Text('${posts[index].id}')),
+                  title: Text(posts[index].title, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  subtitle: Text(posts[index].body, maxLines: 2, overflow: TextOverflow.ellipsis),
+                );
+              },
+            );
+          }
+          return const Center(child: Text('Koi data nahi mila'));
+        },
+      ),
+    );
+  }
+}
+```
+
+---
+
+## 6. Common Errors Aur Unka Hal
+
+1. **`SocketException: Failed host lookup`:**
+   - **Wajah:** Mobile phone ya emulator ka internet disconnect hai, ya URL spelling ghalat hai.
+   - **Hal:** Internet connection check karein aur `Uri.parse()` mein URL verify karein.
+
+2. **`type 'Null' is not a subtype of type 'String'`:**
+   - **Wajah:** Backend se kisi key ki value `null` aa rahi hai lekin aapke model mein field nullable (`String?`) nahi hai.
+   - **Hal:** Agar backend field optional ho to `final String? title;` use karein aur `json['title'] ?? ''` fallback dein.
+
+---
+
+## 7. Meri Raaye / Mera Tajurba (Muhammad Zahid)
+
+> **Pro Tip:**
+> Hamesha API calls par **Timeout** zaroor lagayein (jaise `.timeout(const Duration(seconds: 10))`). Pakistan mein mobile data par aksar network drop hota hai; agar timeout na laga ho to aapki app par loading spinner ghantaon ghoomta rahega aur user app close kar dega.
+
+---
+
+## 8. Khulasa
+
+REST API Flutter development ka backbone hai. Ek dafa aap Model Classes aur FutureBuilder samajh jayein, to aap duniya ki kisi bhi API (weather, e-commerce, news) ko asani se integrate kar sakte hain. Agle tutorial mein hum Provider aur Bloc state management ka muwazna karenge!
